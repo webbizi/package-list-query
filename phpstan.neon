@@ -1,0 +1,12 @@
+includes:
+    - phpstan-baseline.neon
+
+parameters:
+    tmpDir: storage/phpstan
+    paths:
+        - src/
+
+    # Level 10 is the highest level
+    level: 10
+
+    reportUnmatchedIgnoredErrors: false

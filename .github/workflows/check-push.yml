@@ -1,0 +1,43 @@
+name: Check push
+
+on:
+  push:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.4'
+
+    - name: Configure Composer cache
+      id: composer-cache-dir
+      run: echo dir=$(composer config cache-files-dir) >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@master
+      with:
+        path: ${{ steps.composer-cache-dir.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-composer-
+
+    - name: Install Dependencies
+      run: |
+        composer install --no-interaction --no-progress
+
+    - name: Execute tests
+      run: composer test
+
+    - name: Run static analysis
+      run: composer analyse
+
+    - name: Check code style
+      run: composer pint

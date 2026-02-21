@@ -1,0 +1,52 @@
+{
+  "name": "webbizi/list-query",
+  "description": "A type-safe list query system for Laravel with filtering, sorting and relation loading",
+  "type": "library",
+  "license": "MIT",
+  "version": "1.0.0",
+  "keywords": [
+    "laravel",
+    "list-query",
+    "raw-query",
+    "filters",
+    "sorting",
+    "relations"
+  ],
+  "require": {
+    "php": "^8.4",
+    "illuminate/database": "^12.0",
+    "illuminate/http": "^12.0",
+    "illuminate/support": "^12.0",
+    "illuminate/validation": "^12.0"
+  },
+  "require-dev": {
+    "laravel/pint": "^1.24",
+    "orchestra/testbench": "^10.0",
+    "pestphp/pest": "^v3.8.2",
+    "phpstan/phpstan": "^2.1.18"
+  },
+  "autoload": {
+    "psr-4": {
+      "Webbizi\\ListQuery\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Webbizi\\ListQuery\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "test": "vendor/bin/pest",
+    "analyse": "vendor/bin/phpstan analyse --memory-limit=2G",
+    "pint": "vendor/bin/pint --test"
+  },
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "pestphp/pest-plugin": true,
+      "phpstan/extension-installer": true
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
+}
