@@ -1,8 +1,8 @@
 <?php
 
-use Webbizi\ListQuery\FilterOperator;
-use Webbizi\ListQuery\InvalidFilterException;
-use Webbizi\ListQuery\ListFilter;
+use Webbizi\ListQuery\Filter\FilterOperator;
+use Webbizi\ListQuery\Filter\InvalidFilterException;
+use Webbizi\ListQuery\Filter\ListFilter;
 
 test('it parses eq filter from string', function (): void {
     $filter = ListFilter::fromString('name', 'eq:John');

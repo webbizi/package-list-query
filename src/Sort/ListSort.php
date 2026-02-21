@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Webbizi\ListQuery;
+namespace Webbizi\ListQuery\Sort;
 
 final readonly class ListSort
 {

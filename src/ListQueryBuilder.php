@@ -12,28 +12,17 @@ use Webbizi\ListQuery\Config\QueryConfigurable;
 use Webbizi\ListQuery\Dto\ExistsQueryDto;
 use Webbizi\ListQuery\Dto\FindQueryDto;
 use Webbizi\ListQuery\Dto\ListQueryDto;
+use Webbizi\ListQuery\Filter\FilterApplier;
+use Webbizi\ListQuery\Sort\SortApplier;
+use Webbizi\ListQuery\Support\RelationExpander;
 
-final readonly class RawQueryApplier
+final readonly class ListQueryBuilder
 {
     public function __construct(
         private RelationJoiner $relationJoiner,
-        private FilterSortApplier $filterSortApplier,
+        private FilterApplier $filterApplier,
+        private SortApplier $sortApplier,
     ) {}
-
-    /**
-     * @param  class-string<QueryConfigurable>  $repositoryClass
-     * @return array{allowedFilters: array<string>, allowedSorts: array<string>, allowedRelations: array<string>}
-     */
-    public static function allowedConfig(string $repositoryClass): array
-    {
-        $config = $repositoryClass::queryConfig();
-
-        return [
-            'allowedFilters' => $config->allowedFilters,
-            'allowedSorts' => $config->allowedSorts,
-            'allowedRelations' => self::getAllowedRelations($config),
-        ];
-    }
 
     /**
      * @param  class-string<QueryConfigurable>  $repositoryClass
@@ -43,8 +32,8 @@ final readonly class RawQueryApplier
         $config = $this->resolveConfig($repositoryClass);
         $query = $this->buildBaseQuery($config, $dto->relations, $connection);
 
-        $this->filterSortApplier->applyFilters($query, $dto->filters, $config);
-        $this->filterSortApplier->applySort($query, $dto->sort, $config);
+        $this->filterApplier->apply($query, $dto->filters, $config);
+        $this->sortApplier->apply($query, $dto->sort, $config);
 
         return $query;
     }
@@ -76,32 +65,6 @@ final readonly class RawQueryApplier
     }
 
     /**
-     * @return array<string>
-     */
-    private static function getAllowedRelations(QueryConfig $config): array
-    {
-        $allowedRelations = [];
-
-        foreach ($config->hasMany as $relation) {
-            $allowedRelations[] = $relation->name;
-
-            foreach ($relation->nested as $nested) {
-                $allowedRelations[] = "{$relation->name}.{$nested->name}";
-            }
-
-            foreach ($relation->nestedHasMany as $nestedHasMany) {
-                $allowedRelations[] = "{$relation->name}.{$nestedHasMany->name}";
-            }
-        }
-
-        foreach ($config->belongsTo as $relation) {
-            $allowedRelations[] = $relation->name;
-        }
-
-        return $allowedRelations;
-    }
-
-    /**
      * @param  class-string<QueryConfigurable>  $repositoryClass
      */
     private function resolveConfig(string $repositoryClass): QueryConfig
@@ -114,7 +77,7 @@ final readonly class RawQueryApplier
      */
     private function buildBaseQuery(QueryConfig $config, array $relations, string $connection): Builder
     {
-        $relations = SqlHelper::expandParentRelations($relations);
+        $relations = RelationExpander::expand($relations);
         $columns = array_map(
             fn (string $column): string => "{$config->alias}.{$column}",
             $config->columns,

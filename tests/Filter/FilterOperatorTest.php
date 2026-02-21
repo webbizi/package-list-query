@@ -1,6 +1,6 @@
 <?php
 
-use Webbizi\ListQuery\FilterOperator;
+use Webbizi\ListQuery\Filter\FilterOperator;
 
 test('it has correct string values', function (): void {
     expect(FilterOperator::EQ->value)->toBe('eq');

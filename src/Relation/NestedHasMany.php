@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Webbizi\ListQuery\Relation;
 
+use Webbizi\ListQuery\Support\StringHelper;
+
 /**
  * Defines a nested HasMany relation for list queries.
  *
@@ -26,11 +28,6 @@ final readonly class NestedHasMany
         public string $foreignKey,
         ?string $table = null,
     ) {
-        $this->table = $table ?? self::toSnakeCase($name);
-    }
-
-    private static function toSnakeCase(string $camelCase): string
-    {
-        return strtolower((string) preg_replace('/[A-Z]/', '_$0', lcfirst($camelCase)));
+        $this->table = $table ?? StringHelper::toSnakeCase($name);
     }
 }

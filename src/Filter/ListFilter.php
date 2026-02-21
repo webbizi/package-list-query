@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Webbizi\ListQuery;
+namespace Webbizi\ListQuery\Filter;
 
 final readonly class ListFilter
 {

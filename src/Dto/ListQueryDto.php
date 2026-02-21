@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Webbizi\ListQuery\Dto;
 
-use Webbizi\ListQuery\ListFilter;
-use Webbizi\ListQuery\ListSort;
+use Webbizi\ListQuery\Filter\ListFilter;
+use Webbizi\ListQuery\Sort\ListSort;
 
 final readonly class ListQueryDto
 {

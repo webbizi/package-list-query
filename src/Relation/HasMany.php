@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Webbizi\ListQuery\Relation;
 
+use Webbizi\ListQuery\Support\StringHelper;
+
 /**
  * Defines a HasMany relation for list queries.
  *
@@ -34,7 +36,7 @@ final readonly class HasMany
         ?string $table = null,
         ?string $foreignKey = null,
     ) {
-        $this->table = $table ?? self::toSnakeCase($name);
+        $this->table = $table ?? StringHelper::toSnakeCase($name);
         $this->foreignKey = $foreignKey ?? '';  // Resolved at query time from parent table
     }
 
@@ -48,25 +50,6 @@ final readonly class HasMany
             return $this->foreignKey;
         }
 
-        return self::toSingular($parentTable).'_id';
-    }
-
-    private static function toSnakeCase(string $camelCase): string
-    {
-        return strtolower((string) preg_replace('/[A-Z]/', '_$0', lcfirst($camelCase)));
-    }
-
-    private static function toSingular(string $plural): string
-    {
-        // Simple singularization (covers most cases)
-        if (str_ends_with($plural, 'ies')) {
-            return substr($plural, 0, -3).'y';
-        }
-
-        if (str_ends_with($plural, 's')) {
-            return substr($plural, 0, -1);
-        }
-
-        return $plural;
+        return StringHelper::toSingular($parentTable).'_id';
     }
 }

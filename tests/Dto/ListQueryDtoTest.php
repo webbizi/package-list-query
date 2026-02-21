@@ -1,9 +1,9 @@
 <?php
 
 use Webbizi\ListQuery\Dto\ListQueryDto;
-use Webbizi\ListQuery\FilterOperator;
-use Webbizi\ListQuery\ListFilter;
-use Webbizi\ListQuery\ListSort;
+use Webbizi\ListQuery\Filter\FilterOperator;
+use Webbizi\ListQuery\Filter\ListFilter;
+use Webbizi\ListQuery\Sort\ListSort;
 
 test('it creates with defaults', function (): void {
     $dto = new ListQueryDto;

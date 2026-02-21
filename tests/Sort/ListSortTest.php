@@ -1,6 +1,6 @@
 <?php
 
-use Webbizi\ListQuery\ListSort;
+use Webbizi\ListQuery\Sort\ListSort;
 
 test('it creates sort with default ascending direction', function (): void {
     $sort = new ListSort('name');

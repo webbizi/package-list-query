@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Webbizi\ListQuery;
+namespace Webbizi\ListQuery\Filter;
 
 use Illuminate\Database\Query\Builder;
 use Webbizi\ListQuery\Config\QueryConfig;
 
-final readonly class FilterSortApplier
+final readonly class FilterApplier
 {
     /**
      * @param  array<ListFilter>  $filters
      */
-    public function applyFilters(Builder $query, array $filters, QueryConfig $config): void
+    public function apply(Builder $query, array $filters, QueryConfig $config): void
     {
         foreach ($filters as $filter) {
             if (! in_array($filter->field, $config->allowedFilters, true)) {
@@ -21,19 +21,6 @@ final readonly class FilterSortApplier
 
             $this->applyFilter($query, $filter, $config->alias);
         }
-    }
-
-    public function applySort(Builder $query, ?ListSort $sort, QueryConfig $config): void
-    {
-        if ($sort === null) {
-            return;
-        }
-
-        if (! in_array($sort->field, $config->allowedSorts, true)) {
-            return;
-        }
-
-        $query->orderBy("{$config->alias}.{$sort->field}", $sort->direction);
     }
 
     private function applyFilter(Builder $query, ListFilter $filter, string $tableAlias): void
@@ -47,9 +34,9 @@ final readonly class FilterSortApplier
             FilterOperator::GTE => $query->where($field, '>=', $filter->value),
             FilterOperator::LT => $query->where($field, '<', $filter->value),
             FilterOperator::LTE => $query->where($field, '<=', $filter->value),
-            FilterOperator::STARTS_WITH => $query->where($field, 'LIKE', $filter->value.'%'),
-            FilterOperator::ENDS_WITH => $query->where($field, 'LIKE', '%'.$filter->value),
-            FilterOperator::CONTAINS => $query->where($field, 'LIKE', '%'.$filter->value.'%'),
+            FilterOperator::STARTS_WITH => $query->where($field, 'LIKE', LikeWildcardEscaper::escape($filter->value ?? '').'%'),
+            FilterOperator::ENDS_WITH => $query->where($field, 'LIKE', '%'.LikeWildcardEscaper::escape($filter->value ?? '')),
+            FilterOperator::CONTAINS => $query->where($field, 'LIKE', '%'.LikeWildcardEscaper::escape($filter->value ?? '').'%'),
             FilterOperator::NULL => $query->whereNull($field),
             FilterOperator::NOT_NULL => $query->whereNotNull($field),
         };

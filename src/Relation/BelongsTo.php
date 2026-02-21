@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Webbizi\ListQuery\Relation;
 
+use Webbizi\ListQuery\Support\StringHelper;
+
 /**
  * Defines a BelongsTo relation for list queries (nested relation).
  *
@@ -30,21 +32,7 @@ final readonly class BelongsTo
         ?string $table = null,
         ?string $foreignKey = null,
     ) {
-        $this->table = $table ?? self::toPlural($name);
+        $this->table = $table ?? StringHelper::toPlural($name);
         $this->foreignKey = $foreignKey ?? $name.'_id';
-    }
-
-    private static function toPlural(string $singular): string
-    {
-        // Simple pluralization (covers most cases)
-        if (str_ends_with($singular, 'y')) {
-            return substr($singular, 0, -1).'ies';
-        }
-
-        if (str_ends_with($singular, 's')) {
-            return $singular.'es';
-        }
-
-        return $singular.'s';
     }
 }

@@ -7,33 +7,16 @@ namespace Webbizi\ListQuery\Request;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Webbizi\ListQuery\Config\QueryConfigurable;
 use Webbizi\ListQuery\Dto\ListQueryDto;
-use Webbizi\ListQuery\ListFilter;
-use Webbizi\ListQuery\ListSort;
-use Webbizi\ListQuery\RawQueryApplier;
+use Webbizi\ListQuery\Request\Concerns\ParsesListQueryInput;
 
 abstract class AbstractListRequest extends FormRequest
 {
-    /**
-     * @return class-string<QueryConfigurable>
-     */
-    abstract protected function repositoryClass(): string;
+    use ParsesListQueryInput;
 
     public function authorize(): bool
     {
         return true;
-    }
-
-    protected function prepareForValidation(): void
-    {
-        $with = $this->input('with');
-
-        if (is_string($with)) {
-            $this->merge([
-                'with' => array_filter(explode(',', $with)),
-            ]);
-        }
     }
 
     /**
@@ -99,52 +82,5 @@ abstract class AbstractListRequest extends FormRequest
             'allowed_sorts' => $config['allowedSorts'],
             'allowed_relations' => $config['allowedRelations'],
         ];
-    }
-
-    /**
-     * @return array{allowedFilters: array<string>, allowedSorts: array<string>, allowedRelations: array<string>}
-     */
-    protected function allowedConfig(): array
-    {
-        return RawQueryApplier::allowedConfig($this->repositoryClass());
-    }
-
-    /**
-     * @return array<ListFilter>
-     */
-    protected function parseFilters(): array
-    {
-        /** @var array<string, string> $filters */
-        $filters = $this->input('filters', []);
-
-        return collect($filters)
-            ->map(fn (string $expression, string $field): ListFilter => ListFilter::fromString($field, $expression))
-            ->all();
-    }
-
-    protected function parseSort(): ?ListSort
-    {
-        /** @var string|null $sort */
-        $sort = $this->input('sort');
-
-        if ($sort === null) {
-            return null;
-        }
-
-        /** @var string $direction */
-        $direction = $this->input('direction', 'asc');
-
-        return new ListSort($sort, $direction);
-    }
-
-    /**
-     * @return array<string>
-     */
-    protected function parseRelations(): array
-    {
-        /** @var array<string> $relations */
-        $relations = $this->input('with', []);
-
-        return $relations;
     }
 }
