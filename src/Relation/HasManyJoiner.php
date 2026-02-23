@@ -6,7 +6,7 @@ namespace Webbizi\ListQuery\Relation;
 
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
-use Webbizi\ListQuery\Sql\JsonObjectBuilder;
+use Webbizi\ListQuery\Sql\JsonArrayAggBuilder;
 use Webbizi\ListQuery\Support\StringHelper;
 
 final readonly class HasManyJoiner
@@ -45,14 +45,12 @@ final readonly class HasManyJoiner
             $aliasGenerator,
         );
 
-        $jsonObject = JsonObjectBuilder::build($alias, $relation->columns, $nestedJsonFragments);
+        $jsonArrayAgg = JsonArrayAggBuilder::build($alias, $relation->columns, $nestedJsonFragments);
         $jsonColumnName = StringHelper::toSnakeCase($relation->name).'_json';
         $escapedJsonColumnName = StringHelper::escapeIdentifier($jsonColumnName);
 
-        $escapedId = StringHelper::escapeIdentifier('id');
-
         $query->addSelect(DB::raw(
-            "JSON_ARRAYAGG(IF({$escapedAlias}.{$escapedId} IS NOT NULL, {$jsonObject}, NULL)) as {$escapedJsonColumnName}"
+            "{$jsonArrayAgg} as {$escapedJsonColumnName}"
         ));
     }
 

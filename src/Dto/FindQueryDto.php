@@ -7,7 +7,7 @@ namespace Webbizi\ListQuery\Dto;
 final readonly class FindQueryDto
 {
     /**
-     * @param  array<string>  $relations
+     * @param  list<string>  $relations
      */
     public function __construct(
         public array $relations = [],

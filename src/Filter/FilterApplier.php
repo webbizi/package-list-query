@@ -10,7 +10,7 @@ use Webbizi\ListQuery\Config\QueryConfig;
 final readonly class FilterApplier
 {
     /**
-     * @param  array<ListFilter>  $filters
+     * @param  list<ListFilter>  $filters
      */
     public function apply(Builder $query, array $filters, QueryConfig $config): void
     {

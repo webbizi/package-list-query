@@ -10,8 +10,8 @@ use Webbizi\ListQuery\Sort\ListSort;
 final readonly class ListQueryDto
 {
     /**
-     * @param  array<ListFilter>  $filters
-     * @param  array<string>  $relations
+     * @param  list<ListFilter>  $filters
+     * @param  list<string>  $relations
      */
     public function __construct(
         public array $filters = [],

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Webbizi\ListQuery\Request\Concerns;
 
 use Webbizi\ListQuery\Config\QueryConfigurable;
+use Webbizi\ListQuery\Filter\InvalidFilterException;
 use Webbizi\ListQuery\Filter\ListFilter;
 use Webbizi\ListQuery\ListQueryConfigExtractor;
 use Webbizi\ListQuery\Sort\ListSort;
@@ -39,7 +40,9 @@ trait ParsesListQueryInput
     }
 
     /**
-     * @return array<ListFilter>
+     * @return list<ListFilter>
+     *
+     * @throws InvalidFilterException
      */
     protected function parseFilters(): array
     {
@@ -61,13 +64,13 @@ trait ParsesListQueryInput
         }
 
         /** @var string $direction */
-        $direction = $this->input('direction', 'asc');
+        $direction = $this->input('direction', ListSort::DIRECTION_ASC);
 
         return new ListSort($sort, $direction);
     }
 
     /**
-     * @return array<string>
+     * @return list<string>
      */
     protected function parseRelations(): array
     {

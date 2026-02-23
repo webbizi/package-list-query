@@ -9,6 +9,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Webbizi\ListQuery\Dto\ListQueryDto;
 use Webbizi\ListQuery\Request\Concerns\ParsesListQueryInput;
+use Webbizi\ListQuery\Sort\ListSort;
 
 abstract class AbstractListRequest extends FormRequest
 {
@@ -43,7 +44,7 @@ abstract class AbstractListRequest extends FormRequest
             'filters.*' => ['string'],
 
             'sort' => ['sometimes', 'string', Rule::in($config['allowedSorts'])],
-            'direction' => ['sometimes', Rule::in(['asc', 'desc'])],
+            'direction' => ['sometimes', Rule::in([ListSort::DIRECTION_ASC, ListSort::DIRECTION_DESC])],
 
             'with' => [
                 'sometimes',
