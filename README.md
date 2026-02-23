@@ -12,6 +12,7 @@ A type-safe list query system for Laravel that provides declarative filtering, s
 - Relation loading via LEFT JOIN + JSON aggregation (HasMany, BelongsTo, nested)
 - Abstract FormRequests for automatic validation of filters, sorts and relations
 - Immutable DTOs for query parameters
+- Usable from controllers, repositories, jobs, or any service
 
 ## Installation
 
@@ -57,7 +58,9 @@ final class UserRepository implements QueryConfigurable
 }
 ```
 
-### 2. Create a FormRequest
+### 2. Use via HTTP (FormRequest)
+
+Create a FormRequest that extends `AbstractListRequest`:
 
 ```php
 use Webbizi\ListQuery\Request\AbstractListRequest;
@@ -71,18 +74,18 @@ final class ListUsersRequest extends AbstractListRequest
 }
 ```
 
-### 3. Use in a controller
+Then use it in a controller:
 
 ```php
 final class UserController
 {
     public function __construct(
-        private RawQueryApplier $queryApplier,
+        private ListQueryBuilder $queryBuilder,
     ) {}
 
     public function index(ListUsersRequest $request): JsonResponse
     {
-        $query = $this->queryApplier->list(
+        $query = $this->queryBuilder->list(
             UserRepository::class,
             $request->toDto(),
         );
@@ -92,27 +95,56 @@ final class UserController
             'meta' => $request->meta(),
         ]);
     }
-
-    public function show(ShowUserRequest $request, int $id): JsonResponse
-    {
-        $user = $this->queryApplier->find(
-            UserRepository::class,
-            $id,
-            $request->toDto(),
-        );
-
-        return response()->json(['data' => $user]);
-    }
 }
 ```
 
-### 4. Query parameters
+Query parameters:
 
 ```
 GET /users?filters[name]=contains:John&filters[created_at]=gte:2024-01-01&sort=created_at&direction=desc&with=posts,role
 ```
 
-### Available filter operators
+### 3. Use programmatically (without FormRequest)
+
+`ListQueryBuilder` can be used directly from any service, repository, job, or command:
+
+```php
+use Webbizi\ListQuery\Dto\ListQueryDto;
+use Webbizi\ListQuery\Dto\FindQueryDto;
+use Webbizi\ListQuery\Dto\ExistsQueryDto;
+use Webbizi\ListQuery\Filter\ListFilter;
+use Webbizi\ListQuery\Filter\FilterOperator;
+use Webbizi\ListQuery\Sort\ListSort;
+
+// List with filters and sorting
+$query = $this->queryBuilder->list(
+    UserRepository::class,
+    new ListQueryDto(
+        filters: [
+            new ListFilter('email', FilterOperator::CONTAINS, 'example.com'),
+            new ListFilter('created_at', FilterOperator::GTE, '2024-01-01'),
+        ],
+        sort: new ListSort('created_at', ListSort::DIRECTION_DESC),
+        relations: ['posts', 'role'],
+    ),
+);
+$users = $query->get();
+
+// Find a single record with relations
+$user = $this->queryBuilder->find(
+    UserRepository::class,
+    $id,
+    new FindQueryDto(relations: ['posts', 'role']),
+);
+
+// Check existence
+$exists = $this->queryBuilder->exists(
+    UserRepository::class,
+    new ExistsQueryDto(filters: ['email' => 'john@example.com']),
+);
+```
+
+## Available filter operators
 
 | Operator      | Example                          | SQL                            |
 |---------------|----------------------------------|--------------------------------|
@@ -127,31 +159,3 @@ GET /users?filters[name]=contains:John&filters[created_at]=gte:2024-01-01&sort=c
 | `contains`    | `filters[name]=contains:ohn`     | `WHERE name LIKE '%ohn%'`      |
 | `null`        | `filters[deleted_at]=null`       | `WHERE deleted_at IS NULL`     |
 | `not_null`    | `filters[verified_at]=not_null`  | `WHERE verified_at IS NOT NULL`|
-
-## Architecture
-
-```
-src/
-├── Config/              # Query configuration
-│   ├── QueryConfig.php
-│   └── QueryConfigurable.php
-├── Dto/                 # Immutable query parameter objects
-│   ├── ListQueryDto.php
-│   ├── FindQueryDto.php
-│   └── ExistsQueryDto.php
-├── Relation/            # Relation definitions
-│   ├── BelongsTo.php
-│   ├── HasMany.php
-│   └── NestedHasMany.php
-├── Request/             # Abstract Laravel FormRequests
-│   ├── AbstractListRequest.php
-│   └── AbstractShowRequest.php
-├── FilterOperator.php   # Filter operator enum
-├── FilterSortApplier.php
-├── InvalidFilterException.php
-├── ListFilter.php       # Filter value object
-├── ListSort.php         # Sort value object
-├── RawQueryApplier.php  # Main orchestrator
-├── RelationJoiner.php   # JOIN + JSON aggregation
-└── SqlHelper.php        # SQL utilities
-```
