@@ -49,8 +49,10 @@ final readonly class HasManyJoiner
         $jsonColumnName = StringHelper::toSnakeCase($relation->name).'_json';
         $escapedJsonColumnName = StringHelper::escapeIdentifier($jsonColumnName);
 
+        $escapedId = StringHelper::escapeIdentifier('id');
+
         $query->addSelect(DB::raw(
-            "JSON_ARRAYAGG(IF({$escapedAlias}.`id` IS NOT NULL, {$jsonObject}, NULL)) as {$escapedJsonColumnName}"
+            "JSON_ARRAYAGG(IF({$escapedAlias}.{$escapedId} IS NOT NULL, {$jsonObject}, NULL)) as {$escapedJsonColumnName}"
         ));
     }
 

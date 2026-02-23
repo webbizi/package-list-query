@@ -17,6 +17,8 @@ final readonly class JsonArrayAggBuilder
         $escapedAlias = StringHelper::escapeIdentifier($alias);
         $jsonObject = JsonObjectBuilder::build($alias, $columns, $nestedJsonFragments);
 
-        return "JSON_ARRAYAGG(IF({$escapedAlias}.`id` IS NOT NULL, {$jsonObject}, NULL))";
+        $escapedId = StringHelper::escapeIdentifier('id');
+
+        return "JSON_ARRAYAGG(IF({$escapedAlias}.{$escapedId} IS NOT NULL, {$jsonObject}, NULL))";
     }
 }
