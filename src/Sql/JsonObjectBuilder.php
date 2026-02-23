@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Webbizi\ListQuery\Sql;
 
-final class JsonObjectBuilder
+use Webbizi\ListQuery\Support\StringHelper;
+
+final readonly class JsonObjectBuilder
 {
     /**
      * @param  array<int, string>  $columns
@@ -12,10 +14,12 @@ final class JsonObjectBuilder
      */
     public static function build(string $alias, array $columns, array $nestedJsonFragments = []): string
     {
+        $escapedAlias = StringHelper::escapeIdentifier($alias);
         $pairs = [];
 
         foreach ($columns as $column) {
-            $pairs[] = "'{$column}', {$alias}.{$column}";
+            $escapedColumn = StringHelper::escapeIdentifier($column);
+            $pairs[] = "'{$column}', {$escapedAlias}.{$escapedColumn}";
         }
 
         foreach ($nestedJsonFragments as $nestedName => $jsonFragment) {

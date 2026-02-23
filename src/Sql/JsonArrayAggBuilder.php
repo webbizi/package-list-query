@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Webbizi\ListQuery\Sql;
 
-final class JsonArrayAggBuilder
+use Webbizi\ListQuery\Support\StringHelper;
+
+final readonly class JsonArrayAggBuilder
 {
     /**
      * @param  array<int, string>  $columns
@@ -12,8 +14,9 @@ final class JsonArrayAggBuilder
      */
     public static function build(string $alias, array $columns, array $nestedJsonFragments = []): string
     {
+        $escapedAlias = StringHelper::escapeIdentifier($alias);
         $jsonObject = JsonObjectBuilder::build($alias, $columns, $nestedJsonFragments);
 
-        return "JSON_ARRAYAGG(IF({$alias}.id IS NOT NULL, {$jsonObject}, NULL))";
+        return "JSON_ARRAYAGG(IF({$escapedAlias}.`id` IS NOT NULL, {$jsonObject}, NULL))";
     }
 }

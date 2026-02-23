@@ -50,6 +50,8 @@ final readonly class ListQueryBuilder
     }
 
     /**
+     * Filters come from internal code (repositories), not from user input, so column names are trusted.
+     *
      * @param  class-string<QueryConfigurable>  $repositoryClass
      */
     public function exists(string $repositoryClass, ExistsQueryDto $dto, string $connection = 'tenant'): bool

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Webbizi\ListQuery\Support;
 
-final class StringHelper
+final readonly class StringHelper
 {
     public static function toSnakeCase(string $camelCase): string
     {
@@ -35,5 +35,10 @@ final class StringHelper
         }
 
         return $plural;
+    }
+
+    public static function escapeIdentifier(string $identifier): string
+    {
+        return '`'.str_replace('`', '``', $identifier).'`';
     }
 }

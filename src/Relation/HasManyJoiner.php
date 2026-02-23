@@ -27,6 +27,7 @@ final readonly class HasManyJoiner
         AliasGenerator $aliasGenerator,
     ): void {
         $alias = $aliasGenerator->generate($relation->table);
+        $escapedAlias = StringHelper::escapeIdentifier($alias);
         $foreignKey = $relation->resolveForeignKey($parentTable);
 
         $query->leftJoin(
@@ -46,9 +47,10 @@ final readonly class HasManyJoiner
 
         $jsonObject = JsonObjectBuilder::build($alias, $relation->columns, $nestedJsonFragments);
         $jsonColumnName = StringHelper::toSnakeCase($relation->name).'_json';
+        $escapedJsonColumnName = StringHelper::escapeIdentifier($jsonColumnName);
 
         $query->addSelect(DB::raw(
-            "JSON_ARRAYAGG(IF({$alias}.id IS NOT NULL, {$jsonObject}, NULL)) as {$jsonColumnName}"
+            "JSON_ARRAYAGG(IF({$escapedAlias}.`id` IS NOT NULL, {$jsonObject}, NULL)) as {$escapedJsonColumnName}"
         ));
     }
 

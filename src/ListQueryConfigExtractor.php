@@ -7,7 +7,7 @@ namespace Webbizi\ListQuery;
 use Webbizi\ListQuery\Config\QueryConfig;
 use Webbizi\ListQuery\Config\QueryConfigurable;
 
-final class ListQueryConfigExtractor
+final readonly class ListQueryConfigExtractor
 {
     /**
      * @param  class-string<QueryConfigurable>  $repositoryClass

@@ -18,6 +18,9 @@ final readonly class BelongsToJoiner
         AliasGenerator $aliasGenerator,
     ): void {
         $alias = $aliasGenerator->generate($relation->table);
+        $escapedAlias = StringHelper::escapeIdentifier($alias);
+        $escapedParentAlias = StringHelper::escapeIdentifier($parentAlias);
+        $escapedForeignKey = StringHelper::escapeIdentifier($relation->foreignKey);
 
         $query->leftJoin(
             "{$relation->table} as {$alias}",
@@ -28,9 +31,10 @@ final readonly class BelongsToJoiner
 
         $jsonObject = JsonObjectBuilder::build($alias, $relation->columns);
         $jsonColumnName = StringHelper::toSnakeCase($relation->name).'_json';
+        $escapedJsonColumnName = StringHelper::escapeIdentifier($jsonColumnName);
 
         $query->addSelect(DB::raw(
-            "IF({$alias}.id IS NOT NULL, {$jsonObject}, NULL) as {$jsonColumnName}"
+            "IF({$escapedAlias}.`id` IS NOT NULL, {$jsonObject}, NULL) as {$escapedJsonColumnName}"
         ));
     }
 
@@ -57,6 +61,7 @@ final readonly class BelongsToJoiner
             }
 
             $nestedAlias = $aliasGenerator->generate($nestedRelation->table);
+            $escapedNestedAlias = StringHelper::escapeIdentifier($nestedAlias);
 
             $query->leftJoin(
                 "{$nestedRelation->table} as {$nestedAlias}",
@@ -66,7 +71,7 @@ final readonly class BelongsToJoiner
             );
 
             $nestedJsonObject = JsonObjectBuilder::build($nestedAlias, $nestedRelation->columns);
-            $nestedJsonFragments[$nestedRelation->name] = "IF({$nestedAlias}.id IS NOT NULL, {$nestedJsonObject}, NULL)";
+            $nestedJsonFragments[$nestedRelation->name] = "IF({$escapedNestedAlias}.`id` IS NOT NULL, {$nestedJsonObject}, NULL)";
         }
 
         return $nestedJsonFragments;

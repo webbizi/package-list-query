@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Webbizi\ListQuery\Support;
 
-final class RelationExpander
+final readonly class RelationExpander
 {
     /**
      * @param  array<string>  $relations
