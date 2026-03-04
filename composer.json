@@ -3,7 +3,6 @@
   "description": "A type-safe list query system for Laravel with filtering, sorting and relation loading",
   "type": "library",
   "license": "MIT",
-  "version": "1.0.0",
   "keywords": [
     "laravel",
     "list-query",
