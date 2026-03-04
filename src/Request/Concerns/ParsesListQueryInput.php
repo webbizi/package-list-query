@@ -50,9 +50,11 @@ trait ParsesListQueryInput
         /** @var array<string, string> $filters */
         $filters = $this->input('filters', []);
 
-        return collect($filters)
-            ->map(fn (string $expression, string $field): ListFilter => ListFilter::fromString($field, $expression))
-            ->all();
+        return array_values(
+            collect($filters)
+                ->map(fn (string $expression, string $field): ListFilter => ListFilter::fromString($field, $expression))
+                ->all(),
+        );
     }
 
     protected function parseSort(): ?ListSort
@@ -78,7 +80,7 @@ trait ParsesListQueryInput
         /** @var array<string> $relations */
         $relations = $this->input('with', []);
 
-        return $relations;
+        return array_values($relations);
     }
 
     protected function parsePagination(): ?PaginationConfig
