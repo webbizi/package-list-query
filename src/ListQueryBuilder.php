@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Webbizi\ListQuery;
 
+use Closure;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use stdClass;
@@ -29,7 +30,7 @@ final readonly class ListQueryBuilder
     /**
      * @param  class-string<QueryConfigurable>  $repositoryClass
      */
-    public function list(string $repositoryClass, ListQueryDto $dto, string $connection = 'tenant'): Builder
+    public function query(string $repositoryClass, ListQueryDto $dto, string $connection = 'tenant'): Builder
     {
         $config = $this->resolveConfig($repositoryClass);
         $query = $this->buildBaseQuery($config, $dto->relations, $connection);
@@ -41,9 +42,30 @@ final readonly class ListQueryBuilder
     }
 
     /**
+     * @template T
+     *
      * @param  class-string<QueryConfigurable>  $repositoryClass
+     * @param  Closure(stdClass): T  $hydrator
+     * @return list<T>
      */
-    public function paginate(string $repositoryClass, ListQueryDto $dto, string $connection = 'tenant'): PaginatedResult
+    public function list(string $repositoryClass, ListQueryDto $dto, Closure $hydrator, string $connection = 'tenant'): array
+    {
+        return array_values(
+            $this->query($repositoryClass, $dto, $connection)
+                ->cursor()
+                ->map($hydrator)
+                ->all(),
+        );
+    }
+
+    /**
+     * @template T
+     *
+     * @param  class-string<QueryConfigurable>  $repositoryClass
+     * @param  Closure(stdClass): T  $hydrator
+     * @return PaginatedResult<T>
+     */
+    public function paginate(string $repositoryClass, ListQueryDto $dto, Closure $hydrator, string $connection = 'tenant'): PaginatedResult
     {
         $config = $this->resolveConfig($repositoryClass);
         $query = $this->buildBaseQuery($config, $dto->relations, $connection);
@@ -58,7 +80,7 @@ final readonly class ListQueryBuilder
         $items = $query->forPage($pagination->page, $pagination->perPage)->get()->all();
 
         return new PaginatedResult(
-            items: $items,
+            items: array_map($hydrator, $items),
             total: $total,
             perPage: $pagination->perPage,
             currentPage: $pagination->page,
@@ -67,14 +89,20 @@ final readonly class ListQueryBuilder
     }
 
     /**
+     * @template T
+     *
      * @param  class-string<QueryConfigurable>  $repositoryClass
+     * @param  Closure(stdClass): T  $hydrator
+     * @return T|null
      */
-    public function find(string $repositoryClass, int|string $id, FindQueryDto $dto, string $connection = 'tenant'): ?stdClass
+    public function find(string $repositoryClass, int|string $id, FindQueryDto $dto, Closure $hydrator, string $connection = 'tenant'): mixed
     {
         $config = $this->resolveConfig($repositoryClass);
         $query = $this->buildBaseQuery($config, $dto->relations, $connection);
 
-        return $query->where("{$config->alias}.id", $id)->first();
+        $row = $query->where("{$config->alias}.id", $id)->first();
+
+        return $row === null ? null : $hydrator($row);
     }
 
     /**

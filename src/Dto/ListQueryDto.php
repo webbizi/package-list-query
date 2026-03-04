@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Webbizi\ListQuery\Dto;
 
+use Webbizi\ListQuery\Filter\FilterOperator;
 use Webbizi\ListQuery\Filter\ListFilter;
 use Webbizi\ListQuery\Pagination\PaginationConfig;
 use Webbizi\ListQuery\Sort\ListSort;
@@ -29,5 +30,10 @@ final readonly class ListQueryDto
             relations: $this->relations,
             pagination: $this->pagination,
         );
+    }
+
+    public function where(string $field, string|int|float $value): self
+    {
+        return $this->withFilter(new ListFilter($field, FilterOperator::EQ, (string) $value));
     }
 }
