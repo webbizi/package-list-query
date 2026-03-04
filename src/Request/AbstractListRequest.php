@@ -8,6 +8,7 @@ use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Webbizi\ListQuery\Dto\ListQueryDto;
+use Webbizi\ListQuery\Pagination\PaginationConfig;
 use Webbizi\ListQuery\Request\Concerns\ParsesListQueryInput;
 use Webbizi\ListQuery\Sort\ListSort;
 
@@ -59,6 +60,9 @@ abstract class AbstractListRequest extends FormRequest
                 },
             ],
             'with.*' => ['string'],
+
+            'page' => ['sometimes', 'integer', 'min:1'],
+            'per_page' => ['sometimes', 'integer', 'min:1', 'max:'.PaginationConfig::MAX_PER_PAGE],
         ];
     }
 
@@ -68,11 +72,12 @@ abstract class AbstractListRequest extends FormRequest
             filters: $this->parseFilters(),
             sort: $this->parseSort(),
             relations: $this->parseRelations(),
+            pagination: $this->parsePagination(),
         );
     }
 
     /**
-     * @return array{allowed_filters: array<string>, allowed_sorts: array<string>, allowed_relations: array<string>}
+     * @return array{allowed_filters: array<string>, allowed_sorts: array<string>, allowed_relations: array<string>, default_per_page: int, max_per_page: int}
      */
     public function meta(): array
     {
@@ -82,6 +87,8 @@ abstract class AbstractListRequest extends FormRequest
             'allowed_filters' => $config['allowedFilters'],
             'allowed_sorts' => $config['allowedSorts'],
             'allowed_relations' => $config['allowedRelations'],
+            'default_per_page' => PaginationConfig::DEFAULT_PER_PAGE,
+            'max_per_page' => PaginationConfig::MAX_PER_PAGE,
         ];
     }
 }

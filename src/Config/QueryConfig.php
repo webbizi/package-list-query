@@ -25,6 +25,7 @@ final readonly class QueryConfig
         public array $allowedSorts = [],
         public array $hasMany = [],
         public array $belongsTo = [],
+        public bool $softDeletes = false,
         ?string $alias = null,
     ) {
         $this->alias = $alias ?? self::generateAlias($table);

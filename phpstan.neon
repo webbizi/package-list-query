@@ -10,3 +10,8 @@ parameters:
     level: 10
 
     reportUnmatchedIgnoredErrors: false
+
+    ignoreErrors:
+        -
+            identifier: trait.unused
+            path: src/Hydration/HydratesToScalar.php

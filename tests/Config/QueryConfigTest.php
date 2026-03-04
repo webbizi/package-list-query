@@ -63,4 +63,27 @@ test('it has empty defaults for optional parameters', function (): void {
     expect($config->allowedSorts)->toBe([]);
     expect($config->hasMany)->toBe([]);
     expect($config->belongsTo)->toBe([]);
+    expect($config->softDeletes)->toBeFalse();
+});
+
+test('it enables soft deletes', function (): void {
+    $config = new QueryConfig(
+        table: 'users',
+        columns: ['id'],
+        softDeletes: true,
+    );
+
+    expect($config->softDeletes)->toBeTrue();
+});
+
+test('soft deletes works with custom alias', function (): void {
+    $config = new QueryConfig(
+        table: 'users',
+        columns: ['id'],
+        softDeletes: true,
+        alias: 'u',
+    );
+
+    expect($config->softDeletes)->toBeTrue();
+    expect($config->alias)->toBe('u');
 });

@@ -13,6 +13,8 @@ use Webbizi\ListQuery\Dto\ExistsQueryDto;
 use Webbizi\ListQuery\Dto\FindQueryDto;
 use Webbizi\ListQuery\Dto\ListQueryDto;
 use Webbizi\ListQuery\Filter\FilterApplier;
+use Webbizi\ListQuery\Pagination\PaginatedResult;
+use Webbizi\ListQuery\Pagination\PaginationConfig;
 use Webbizi\ListQuery\Sort\SortApplier;
 use Webbizi\ListQuery\Support\RelationExpander;
 
@@ -41,6 +43,32 @@ final readonly class ListQueryBuilder
     /**
      * @param  class-string<QueryConfigurable>  $repositoryClass
      */
+    public function paginate(string $repositoryClass, ListQueryDto $dto, string $connection = 'tenant'): PaginatedResult
+    {
+        $config = $this->resolveConfig($repositoryClass);
+        $query = $this->buildBaseQuery($config, $dto->relations, $connection);
+
+        $this->filterApplier->apply($query, $dto->filters, $config);
+        $this->sortApplier->apply($query, $dto->sort, $config);
+
+        $pagination = $dto->pagination ?? new PaginationConfig;
+        $total = $query->getCountForPagination();
+
+        /** @var list<stdClass> $items */
+        $items = $query->forPage($pagination->page, $pagination->perPage)->get()->all();
+
+        return new PaginatedResult(
+            items: $items,
+            total: $total,
+            perPage: $pagination->perPage,
+            currentPage: $pagination->page,
+            lastPage: $total > 0 ? (int) ceil($total / $pagination->perPage) : 1,
+        );
+    }
+
+    /**
+     * @param  class-string<QueryConfigurable>  $repositoryClass
+     */
     public function find(string $repositoryClass, int|string $id, FindQueryDto $dto, string $connection = 'tenant'): ?stdClass
     {
         $config = $this->resolveConfig($repositoryClass);
@@ -58,6 +86,10 @@ final readonly class ListQueryBuilder
     {
         $config = $this->resolveConfig($repositoryClass);
         $query = DB::connection($connection)->table($config->table);
+
+        if ($config->softDeletes) {
+            $query->whereNull('deleted_at');
+        }
 
         foreach ($dto->filters as $column => $value) {
             $query->where($column, $value);
@@ -89,6 +121,10 @@ final readonly class ListQueryBuilder
             ->table("{$config->table} as {$config->alias}")
             ->select($columns)
             ->groupBy($columns);
+
+        if ($config->softDeletes) {
+            $query->whereNull("{$config->alias}.deleted_at");
+        }
 
         $this->relationJoiner->applyRelations($query, $relations, $config);
 

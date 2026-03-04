@@ -8,6 +8,7 @@ use Webbizi\ListQuery\Config\QueryConfigurable;
 use Webbizi\ListQuery\Filter\InvalidFilterException;
 use Webbizi\ListQuery\Filter\ListFilter;
 use Webbizi\ListQuery\ListQueryConfigExtractor;
+use Webbizi\ListQuery\Pagination\PaginationConfig;
 use Webbizi\ListQuery\Sort\ListSort;
 
 /**
@@ -78,5 +79,23 @@ trait ParsesListQueryInput
         $relations = $this->input('with', []);
 
         return $relations;
+    }
+
+    protected function parsePagination(): ?PaginationConfig
+    {
+        /** @var int|string|null $page */
+        $page = $this->input('page');
+
+        /** @var int|string|null $perPage */
+        $perPage = $this->input('per_page');
+
+        if ($page === null && $perPage === null) {
+            return null;
+        }
+
+        return new PaginationConfig(
+            page: $page !== null ? (int) $page : 1,
+            perPage: $perPage !== null ? (int) $perPage : PaginationConfig::DEFAULT_PER_PAGE,
+        );
     }
 }
